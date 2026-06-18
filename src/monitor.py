@@ -193,3 +193,21 @@ def get_event_topics_for_contract(abi: list) -> dict:
                 "inputs": item.get("inputs", []),
             }
     return events
+
+
+    def watch_events(self, contract_address, topics, from_block='latest'):
+        """Monitor contract events with automatic reconnection."""
+        while True:
+            try:
+                filter_params = {
+                    'address': contract_address,
+                    'topics': topics,
+                    'fromBlock': from_block
+                }
+                logs = self.w3.eth.get_logs(filter_params)
+                for log in logs:
+                    yield self.decode_event(log)
+                from_block = logs[-1]['blockNumber'] + 1 if logs else from_block
+            except Exception as e:
+                logger.warning(f"Event monitor error: {e}")
+                time.sleep(5)
