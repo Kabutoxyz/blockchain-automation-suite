@@ -141,3 +141,17 @@ def deploy_erc721(rpc_url: str, private_key: str, name: str, symbol: str) -> dic
     return deploy_from_source(
         rpc_url, source, private_key, constructor_args=[name, symbol]
     )
+
+
+    def estimate_deployment_gas(self, bytecode, constructor_args=None):
+        """Estimate gas for contract deployment."""
+        tx = {
+            'data': bytecode,
+            'from': self.deployer_address,
+        }
+        if constructor_args:
+            tx['data'] += encode_constructor_args(constructor_args)
+        
+        gas_estimate = self.w3.eth.estimate_gas(tx)
+        # Add 20% buffer for safety
+        return int(gas_estimate * 1.2)
